@@ -1,0 +1,3295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantX - Quantitative Financial Intelligence Platform</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0b0f19;
+            color: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #111827;
+            border-right: 1px solid #252c3a;
+            padding: 25px 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .logo-badge {
+            font-size: 10px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 9px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: #1e293b;
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+
+        .nav-item.active {
+            background: #1e293b;
+            color: #38bdf8;
+            font-weight: 600;
+            border-left: 3px solid #38bdf8;
+        }
+
+        .nav-item .icon {
+            font-size: 18px;
+            margin-right: 12px;
+            width: 22px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #1f293d;
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .system-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 8px #4ade80;
+        }
+
+        /* ================= MAIN LAYOUT ================= */
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+            max-width: 1400px;
+        }
+
+        /* SECTIONS ROUTER */
+        .page-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .page-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            background: #102a22;
+            color: #4ade80;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        /* ================= CONTROLS & FORMS ================= */
+        .controls {
+            background: #111827;
+            border: 1px solid #252c3a;
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 25px;
+        }
+
+        .control {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .control label {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0b0f19;
+            color: #f8fafc;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-primary {
+            background: #38bdf8;
+            color: #04131f;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 11px 16px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            background: #0ea5e9;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ================= VALIDATION & ERROR STYLES ================= */
+        .val-error {
+            color: #f87171;
+            font-size: 11px;
+            font-weight: 500;
+            display: none;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+
+        .val-error.active {
+            display: block;
+            animation: fadeInErr 0.2s ease;
+        }
+
+        @keyframes fadeInErr {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input.is-invalid, select.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+
+        input.is-valid, select.is-valid {
+            border-color: #10b981 !important;
+        }
+
+        /* ================= FLOATING TOAST NOTIFICATIONS ================= */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 420px;
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #f8fafc;
+            font-size: 13px;
+            line-height: 1.4;
+            animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast.toast-error {
+            border-left: 4px solid #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .toast.toast-success {
+            border-left: 4px solid #10b981;
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .toast.toast-warning {
+            border-left: 4px solid #f59e0b;
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .toast.toast-info {
+            border-left: 4px solid #38bdf8;
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .toast-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .toast-body {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 2px;
+            color: #f1f5f9;
+        }
+
+        .toast-message {
+            color: #94a3b8;
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        .toast-close {
+            cursor: pointer;
+            color: #64748b;
+            background: none;
+            border: none;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .toast-close:hover {
+            color: #f8fafc;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes toastFadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+        }
+
+        /* ================= API KEY BADGE & MODAL STYLES ================= */
+        .api-key-badge {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            color: #e2e8f0;
+        }
+
+        .api-key-badge:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.14);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .api-key-badge .key-code {
+            font-family: monospace;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .api-key-badge .active-pill {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-api-key-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin: 8px 0 6px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .sidebar-api-key-box:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .sidebar-api-key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .sidebar-api-key-val {
+            font-family: monospace;
+            color: #38bdf8;
+            font-size: 11px;
+            margin-top: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* MODAL DIALOG */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 7, 13, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100000;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+            animation: modalFadeIn 0.2s ease forwards;
+        }
+
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 540px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .modal-close-btn:hover {
+            color: #f8fafc;
+        }
+
+        .key-info-pill {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            font-size: 12px;
+        }
+
+        .key-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalPopIn {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 7px 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary.active {
+            background: #334155;
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        /* ================= ASSET CARDS ================= */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .asset-card {
+            background: #111827;
+            border: 1px solid #252c3a;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .asset-card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .asset-card.selected {
+            border-color: #38bdf8;
+            background: #132238;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .asset-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .asset-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .asset-symbol {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .asset-price {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .asset-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+            padding-top: 10px;
+            border-top: 1px solid #1e293b;
+        }
+
+        /* ================= METRIC CARDS ================= */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            background: #111827;
+            border: 1px solid #252c3a;
+            padding: 16px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-title {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            margin-top: 6px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .metric-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .up {
+            color: #4ade80 !important;
+        }
+
+        .down {
+            color: #f87171 !important;
+        }
+
+        .neutral {
+            color: #94a3b8 !important;
+        }
+
+        /* ================= PANELS & CHARTS ================= */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .chart-grid-equal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: #111827;
+            border: 1px solid #252c3a;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .panel-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .chart-container-sm {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* ================= STRATEGY BOXES ================= */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .strategy-box {
+            background: #111827;
+            border: 1px solid #252c3a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .strategy-box h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .strategy-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a2233;
+            font-size: 13px;
+        }
+
+        .strategy-row:last-child {
+            border-bottom: none;
+        }
+
+        .strategy-row .label {
+            color: #94a3b8;
+        }
+
+        .strategy-row .val {
+            font-weight: 600;
+        }
+
+        /* ================= TABLES ================= */
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table.quantx-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        table.quantx-table th {
+            background: #161f30;
+            color: #94a3b8;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid #252c3a;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        table.quantx-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1e293b;
+            color: #e2e8f0;
+        }
+
+        table.quantx-table tbody tr:hover {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-buy {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .badge-sell {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .badge-close {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .badge-asset {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        /* CORRELATION HEATMAP */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 120px repeat(3, 1fr);
+            gap: 8px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .heatmap-cell {
+            padding: 18px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.02);
+        }
+
+        .heatmap-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            color: #f1f5f9;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        /* ================= RESPONSIVENESS ================= */
+        @media(max-width: 1100px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .chart-grid,
+            .chart-grid-equal,
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 20px 8px;
+            }
+
+            .logo span,
+            .logo-badge,
+            .nav-item span:last-child,
+            .sidebar-footer {
+                display: none;
+            }
+
+            .main {
+                margin-left: 70px;
+                padding: 16px;
+            }
+
+            .asset-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+    <div class="sidebar">
+        <div class="logo">
+            Quant<span>X</span>
+            <div class="logo-badge">PRO</div>
+        </div>
+
+        <ul class="nav-list">
+            <li class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard')">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </li>
+            <li class="nav-item" id="nav-market" onclick="navigateTo('market')">
+                <span class="icon">📈</span>
+                <span>Market Analysis</span>
+            </li>
+            <li class="nav-item" id="nav-backtest" onclick="navigateTo('backtest')">
+                <span class="icon">🧮</span>
+                <span>Backtesting</span>
+            </li>
+            <li class="nav-item" id="nav-risk" onclick="navigateTo('risk')">
+                <span class="icon">⚠️</span>
+                <span>Risk Analysis</span>
+            </li>
+            <li class="nav-item" id="nav-correlation" onclick="navigateTo('correlation')">
+                <span class="icon">🔗</span>
+                <span>Correlation</span>
+            </li>
+            <li class="nav-item" id="nav-trades" onclick="navigateTo('trades')">
+                <span class="icon">📋</span>
+                <span>Trade History</span>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="system-status-indicator">
+                <div class="pulse-dot"></div>
+                <span id="sidebarStatusText">API Connected</span>
+            </div>
+            <div class="sidebar-api-key-box" onclick="openApiKeyModal()" title="View and Configure API Key">
+                <div class="sidebar-api-key-header">
+                    <span>🔑 API Key</span>
+                    <span class="active-pill" style="font-size: 9px; padding: 1px 5px; color: #10b981;">ACTIVE</span>
+                </div>
+                <div class="sidebar-api-key-val" id="sidebarKeyPreview">rc_43a3...2503</div>
+            </div>
+            <div>FastAPI + Yahoo Finance</div>
+            <div>Multi-Asset Engine v1.1</div>
+        </div>
+    </div>
+
+    <!-- ================= API KEY MODAL ================= -->
+    <div class="modal-backdrop" id="apiKeyModal" onclick="closeApiKeyModalOnBackdrop(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 22px;">🔑</span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 16px; color: #f8fafc;">QuantX API Key Configuration</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Active authentication credentials for financial intelligence suite</div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeApiKeyModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="key-info-pill">
+                    <div class="key-info-row">
+                        <span style="color: #94a3b8;">Authentication Status</span>
+                        <span style="color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 8px;">●</span> ACTIVE &amp; VERIFIED
+                        </span>
+                    </div>
+                    <div class="key-info-row">
+                        <span style="color: #94a3b8;">Access Tier</span>
+                        <span style="color: #38bdf8; font-weight: 600;">Enterprise Quantitative Suite</span>
+                    </div>
+                    <div class="key-info-row">
+                        <span style="color: #94a3b8;">Header Injection</span>
+                        <code style="color: #e2e8f0; font-size: 11px;">X-API-Key: rc_43a3...2503</code>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <label>Active API Secret Key</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input id="modalApiKeyInput" type="password" value="rc_43a33fc68f4641e598173a55da96b75af2d580ba0ad3b47a20b48c00b0582503" style="font-family: monospace; font-size: 12px; padding-right: 70px;">
+                        <button class="btn-secondary" id="toggleKeyBtn" style="position: absolute; right: 6px; padding: 5px 10px; font-size: 11px;" onclick="toggleApiKeyVisibility()">Show</button>
+                    </div>
+                    <span style="color: #64748b; font-size: 11px; margin-top: 4px;">Configured Key: <code>rc_43a33fc68f4641e598173a55da96b75af2d580ba0ad3b47a20b48c00b0582503</code></span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 10px;">
+                    <button class="btn-secondary" onclick="copyApiKeyToClipboard()">📋 Copy Key</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary" onclick="resetDefaultApiKey()">Reset Default</button>
+                        <button class="btn-primary" onclick="saveAndVerifyApiKey()">✓ Verify &amp; Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="main">
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- ========================================================= -->
+        <!-- 1. DASHBOARD SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-dashboard" class="page-section active">
+            <div class="header">
+                <div>
+                    <h1>Financial Intelligence Dashboard</h1>
+                    <p>Cross-Asset Real-Time Analytics & Quantitative Overview</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="api-key-badge" onclick="openApiKeyModal()" title="QuantX API Key: rc_43a33fc68f4641e598173a55da96b75af2d580ba0ad3b47a20b48c00b0582503">
+                        <span>🔑</span>
+                        <span class="key-code" id="headerKeyPreview">rc_43a3...2503</span>
+                        <span class="active-pill">✓ VERIFIED</span>
+                    </div>
+                    <div class="status-badge" id="dashApiStatus">
+                        ● Live Market Connected
+                    </div>
+                </div>
+            </div>
+
+            <!-- ASSET CARDS OVERVIEW -->
+            <div class="asset-grid">
+                <div class="asset-card selected" id="dash-card-gold" onclick="selectDashboardAsset('gold')">
+                    <div class="asset-top">
+                        <div>
+                            <div class="asset-title">Gold (Futures)</div>
+                            <div class="asset-symbol">GC=F • Precious Metals</div>
+                        </div>
+                        <div class="badge badge-asset" id="dash-gold-return">+0.00%</div>
+                    </div>
+                    <div class="asset-price" id="dash-gold-price">$0.00</div>
+                    <div class="asset-footer">
+                        <span>Vol: <strong id="dash-gold-vol">--</strong></span>
+                        <span>Sharpe: <strong id="dash-gold-sharpe">--</strong></span>
+                        <span>Drawdown: <strong id="dash-gold-dd" class="down">--</strong></span>
+                    </div>
+                </div>
+
+                <div class="asset-card" id="dash-card-bitcoin" onclick="selectDashboardAsset('bitcoin')">
+                    <div class="asset-top">
+                        <div>
+                            <div class="asset-title">Bitcoin (USD)</div>
+                            <div class="asset-symbol">BTC-USD • Cryptocurrency</div>
+                        </div>
+                        <div class="badge badge-asset" id="dash-btc-return">+0.00%</div>
+                    </div>
+                    <div class="asset-price" id="dash-btc-price">$0.00</div>
+                    <div class="asset-footer">
+                        <span>Vol: <strong id="dash-btc-vol">--</strong></span>
+                        <span>Sharpe: <strong id="dash-btc-sharpe">--</strong></span>
+                        <span>Drawdown: <strong id="dash-btc-dd" class="down">--</strong></span>
+                    </div>
+                </div>
+
+                <div class="asset-card" id="dash-card-nvidia" onclick="selectDashboardAsset('nvidia')">
+                    <div class="asset-top">
+                        <div>
+                            <div class="asset-title">NVIDIA Corporation</div>
+                            <div class="asset-symbol">NVDA • Tech / Semiconductor</div>
+                        </div>
+                        <div class="badge badge-asset" id="dash-nvda-return">+0.00%</div>
+                    </div>
+                    <div class="asset-price" id="dash-nvda-price">$0.00</div>
+                    <div class="asset-footer">
+                        <span>Vol: <strong id="dash-nvda-vol">--</strong></span>
+                        <span>Sharpe: <strong id="dash-nvda-sharpe">--</strong></span>
+                        <span>Drawdown: <strong id="dash-nvda-dd" class="down">--</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD QUICK CONTROLS -->
+            <div class="controls">
+                <div class="control">
+                    <label>Active Asset</label>
+                    <select id="dashAsset" onchange="runDashboardBacktest()">
+                        <option value="gold">Gold (GC=F)</option>
+                        <option value="bitcoin">Bitcoin (BTC-USD)</option>
+                        <option value="nvidia">NVIDIA (NVDA)</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Strategy</label>
+                    <select id="dashStrategy" onchange="runDashboardBacktest()">
+                        <option value="sma">SMA Crossover (20/50)</option>
+                        <option value="ema">EMA Trend (20/50)</option>
+                        <option value="momentum">Momentum (20d)</option>
+                        <option value="mean_reversion">Mean Reversion</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Time Horizon</label>
+                    <select id="dashPeriod" onchange="runDashboardBacktest()">
+                        <option value="1y">1 Year</option>
+                        <option value="3y">3 Years</option>
+                        <option value="5y" selected>5 Years</option>
+                        <option value="10y">10 Years</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Initial Capital</label>
+                    <input id="dashCapital" type="number" value="100000" min="1000" max="1000000000" step="1000" oninput="validateDashCapital()" onchange="runDashboardBacktest()">
+                    <span class="val-error" id="dashCapitalErr">Min ₹1,000, Max ₹1,000,000,000</span>
+                </div>
+                <button class="btn-primary" id="dashRunBtn" onclick="runDashboardBacktest()">
+                    ▶ RUN SIMULATION
+                </button>
+            </div>
+
+            <!-- KEY METRICS GRID -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Total Return</div>
+                    <div class="metric-value up" id="dashMetricReturn">--</div>
+                    <div class="metric-subtitle">Strategy Performance</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Final Capital</div>
+                    <div class="metric-value up" id="dashMetricCapital">--</div>
+                    <div class="metric-subtitle">Net after slippage/cost</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Sharpe Ratio</div>
+                    <div class="metric-value" id="dashMetricSharpe">--</div>
+                    <div class="metric-subtitle">Risk-adjusted return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Volatility</div>
+                    <div class="metric-value" id="dashMetricVol">--</div>
+                    <div class="metric-subtitle">Annualized (252d)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Max Drawdown</div>
+                    <div class="metric-value down" id="dashMetricDD">--</div>
+                    <div class="metric-subtitle">Peak-to-trough drop</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Total Trades</div>
+                    <div class="metric-value" id="dashMetricTrades">--</div>
+                    <div class="metric-subtitle">Executed orders</div>
+                </div>
+            </div>
+
+            <!-- CHARTS GRID -->
+            <div class="chart-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Historical Price & Technical Trajectory</h2>
+                            <p>Asset price movement alongside fast and slow moving average bands</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dashPriceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Market Regime Split</h2>
+                            <p>Distribution across market environments</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dashRegimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STRATEGY VS BENCHMARK BREAKDOWN -->
+            <div class="strategy-grid">
+                <div class="strategy-box">
+                    <h3>Strategy Execution Performance</h3>
+                    <div class="strategy-row">
+                        <span class="label">Strategy Model</span>
+                        <span class="val" id="dashStratName">SMA Crossover</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Initial Allocation</span>
+                        <span class="val" id="dashInitAlloc">₹1,00,000</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Ending Portfolio Value</span>
+                        <span class="val up" id="dashEndingVal">₹1,24,680</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Strategy Net Return</span>
+                        <span class="val up" id="dashStratReturn">+24.68%</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Worst Drawdown</span>
+                        <span class="val down" id="dashStratDD">-12.31%</span>
+                    </div>
+                </div>
+
+                <div class="strategy-box">
+                    <h3>Strategy vs Buy & Hold Benchmark</h3>
+                    <div class="strategy-row">
+                        <span class="label">Strategy Total Return</span>
+                        <span class="val up" id="dashCompStratRet">+24.68%</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Buy & Hold Return</span>
+                        <span class="val" id="dashCompBnhRet">+19.42%</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Strategy Sharpe</span>
+                        <span class="val" id="dashCompStratSharpe">1.72</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Buy & Hold Sharpe</span>
+                        <span class="val" id="dashCompBnhSharpe">1.31</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Alpha Generated (Difference)</span>
+                        <span class="val up" id="dashCompAlpha">+5.26%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EQUITY CURVE -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Portfolio Cumulative Equity Curve</h2>
+                        <p>Track strategy growth against passive holding benchmark</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dashEquityChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. MARKET ANALYSIS SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-market" class="page-section">
+            <div class="header">
+                <div>
+                    <h1>Market Technical Analysis</h1>
+                    <p>Quantitative price action, moving average crossovers, daily returns & rolling volatility</p>
+                </div>
+                <div class="status-badge">
+                    ● Quantitative Analytics
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="controls">
+                <div class="control">
+                    <label>Select Asset</label>
+                    <select id="marketAsset" onchange="loadMarketAnalysis()">
+                        <option value="gold">Gold (GC=F)</option>
+                        <option value="bitcoin">Bitcoin (BTC-USD)</option>
+                        <option value="nvidia">NVIDIA (NVDA)</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Time Horizon</label>
+                    <select id="marketPeriod" onchange="loadMarketAnalysis()">
+                        <option value="1y">1 Year</option>
+                        <option value="3y">3 Years</option>
+                        <option value="5y" selected>5 Years</option>
+                        <option value="10y">10 Years</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="marketRefreshBtn" onclick="loadMarketAnalysis()">
+                    🔄 REFRESH ANALYSIS
+                </button>
+            </div>
+
+            <!-- MARKET SNAPSHOT METRICS -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Latest Price</div>
+                    <div class="metric-value" id="mktPrice">--</div>
+                    <div class="metric-subtitle">Current closing price</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">52-Week High</div>
+                    <div class="metric-value up" id="mktHigh">--</div>
+                    <div class="metric-subtitle">Past 252 trading days</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">52-Week Low</div>
+                    <div class="metric-value down" id="mktLow">--</div>
+                    <div class="metric-subtitle">Past 252 trading days</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Total Period Return</div>
+                    <div class="metric-value up" id="mktReturn">--</div>
+                    <div class="metric-subtitle">Cumulative gain</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Annualized Volatility</div>
+                    <div class="metric-value" id="mktVol">--</div>
+                    <div class="metric-subtitle">Standard deviation * √252</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">SMA 20 Status</div>
+                    <div class="metric-value" id="mktSmaTrend">--</div>
+                    <div class="metric-subtitle">Short-term momentum</div>
+                </div>
+            </div>
+
+            <!-- PRICE & MOVING AVERAGES CHART -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Price Action with SMA 20/50 and EMA 20/50 Bands</h2>
+                        <p>Compare simple moving averages vs exponential moving averages</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="marketPriceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- RETURNS & VOLATILITY DUAL CHARTS -->
+            <div class="chart-grid-equal">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Cumulative Return (%)</h2>
+                            <p>Compounded return growth of asset over the selected window</p>
+                        </div>
+                    </div>
+                    <div class="chart-container-sm">
+                        <canvas id="marketCumulativeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>20-Day Rolling Volatility (% p.a.)</h2>
+                            <p>Tracks volatility clustering and turbulence regimes</p>
+                        </div>
+                    </div>
+                    <div class="chart-container-sm">
+                        <canvas id="marketRollingVolChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. BACKTESTING SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-backtest" class="page-section">
+            <div class="header">
+                <div>
+                    <h1>Quantitative Strategy Backtesting Engine</h1>
+                    <p>Simulate mathematical trading rules, customize lookback windows, and measure risk-adjusted edge</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="api-key-badge" onclick="openApiKeyModal()" title="Click to view/edit QuantX API Key">
+                        <span>🔑</span>
+                        <span class="key-code">rc_43a3...2503</span>
+                        <span class="active-pill">✓ VERIFIED</span>
+                    </div>
+                    <div class="status-badge">
+                        ● Simulation Engine Ready
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROL PANEL -->
+            <div class="controls">
+                <div class="control">
+                    <label>Target Asset</label>
+                    <select id="btAsset">
+                        <option value="gold">Gold (GC=F)</option>
+                        <option value="bitcoin" selected>Bitcoin (BTC-USD)</option>
+                        <option value="nvidia">NVIDIA (NVDA)</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Trading Strategy</label>
+                    <select id="btStrategy">
+                        <option value="sma">SMA Crossover</option>
+                        <option value="ema">EMA Trend</option>
+                        <option value="momentum">Momentum (Rate of Change)</option>
+                        <option value="mean_reversion">Mean Reversion</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Initial Capital</label>
+                    <input id="btCapital" type="number" value="100000" min="1000" max="1000000000" step="1000" oninput="validateBtCapital()">
+                    <span class="val-error" id="btCapitalErr">Capital must be ₹1,000 to ₹1,000,000,000</span>
+                </div>
+                <div class="control">
+                    <label>Transaction Cost (%)</label>
+                    <input id="btCost" type="number" value="0.10" min="0" max="10" step="0.01" oninput="validateBtCost()">
+                    <span class="val-error" id="btCostErr">Fee must be between 0.00% and 10.00%</span>
+                </div>
+                <div class="control">
+                    <label>Short Window (MA)</label>
+                    <input id="btShortWindow" type="number" value="20" min="2" max="500" oninput="validateBtWindows()">
+                    <span class="val-error" id="btShortWindowErr">Must be ≥ 2 and &lt; Long Window</span>
+                </div>
+                <div class="control">
+                    <label>Long Window (MA)</label>
+                    <input id="btLongWindow" type="number" value="50" min="3" max="1000" oninput="validateBtWindows()">
+                    <span class="val-error" id="btLongWindowErr">Must be &gt; Short Window (min 3)</span>
+                </div>
+                <div class="control">
+                    <label>Time Horizon</label>
+                    <select id="btPeriod">
+                        <option value="1y">1 Year</option>
+                        <option value="3y">3 Years</option>
+                        <option value="5y" selected>5 Years</option>
+                        <option value="10y">10 Years</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="btRunBtn" onclick="runBacktestEngine()">
+                    ▶ RUN BACKTEST
+                </button>
+            </div>
+
+            <!-- BACKTEST PERFORMANCE SCORECARD -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Total Return</div>
+                    <div class="metric-value up" id="btTotalReturn">--</div>
+                    <div class="metric-subtitle">Net strategy return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Final Portfolio</div>
+                    <div class="metric-value up" id="btFinalCapital">--</div>
+                    <div class="metric-subtitle">Starting from initial capital</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Sharpe Ratio</div>
+                    <div class="metric-value" id="btSharpe">--</div>
+                    <div class="metric-subtitle">Excess return per unit risk</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Annualized Volatility</div>
+                    <div class="metric-value" id="btVol">--</div>
+                    <div class="metric-subtitle">Strategy standard deviation</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Max Drawdown</div>
+                    <div class="metric-value down" id="btDrawdown">--</div>
+                    <div class="metric-subtitle">Deepest equity retreat</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Executed Trades</div>
+                    <div class="metric-value" id="btTrades">--</div>
+                    <div class="metric-subtitle">Entries & exits count</div>
+                </div>
+            </div>
+
+            <!-- BACKTEST CHARTS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Strategy Portfolio vs Buy & Hold Equity Trajectory</h2>
+                        <p>Compare portfolio accumulation with passive asset buy-and-hold</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="btEquityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Price Action & Trade Signal Points</h2>
+                        <p>Historical price with moving average crossovers and signal entry zones</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="btSignalsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- COMPARISON CARDS -->
+            <div class="strategy-grid">
+                <div class="strategy-box">
+                    <h3>Strategy Model Breakdown</h3>
+                    <div class="strategy-row">
+                        <span class="label">Strategy</span>
+                        <span class="val" id="btModelName">SMA Crossover</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Fast Window / Slow Window</span>
+                        <span class="val" id="btWindowsLabel">20 / 50</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Transaction Cost Applied</span>
+                        <span class="val" id="btCostLabel">0.10%</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Total Return</span>
+                        <span class="val up" id="btModelReturn">--</span>
+                    </div>
+                </div>
+
+                <div class="strategy-box">
+                    <h3>Benchmark Comparison (Buy & Hold)</h3>
+                    <div class="strategy-row">
+                        <span class="label">Buy & Hold Return</span>
+                        <span class="val" id="btBnhReturn">--</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Buy & Hold Ending Value</span>
+                        <span class="val" id="btBnhEnding">--</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Buy & Hold Sharpe Ratio</span>
+                        <span class="val" id="btBnhSharpe">--</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Strategy Alpha / Difference</span>
+                        <span class="val up" id="btAlphaDiff">--</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 4. RISK ANALYSIS SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-risk" class="page-section">
+            <div class="header">
+                <div>
+                    <h1>Quantitative Risk & Downside Analytics</h1>
+                    <p>Drawdown distributions, downside deviation, Value at Risk (VaR), and risk-adjusted ratios</p>
+                </div>
+                <div class="status-badge">
+                    ● Tail Risk Engine
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="controls">
+                <div class="control">
+                    <label>Select Asset</label>
+                    <select id="riskAsset" onchange="loadRiskAnalysis()">
+                        <option value="gold">Gold (GC=F)</option>
+                        <option value="bitcoin" selected>Bitcoin (BTC-USD)</option>
+                        <option value="nvidia">NVIDIA (NVDA)</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Historical Period</label>
+                    <select id="riskPeriod" onchange="loadRiskAnalysis()">
+                        <option value="1y">1 Year</option>
+                        <option value="3y">3 Years</option>
+                        <option value="5y" selected>5 Years</option>
+                        <option value="10y">10 Years</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="riskRefreshBtn" onclick="loadRiskAnalysis()">
+                    ⚡ CALCULATE RISK METRICS
+                </button>
+            </div>
+
+            <!-- RISK METRICS SCORECARD -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Annualized Volatility</div>
+                    <div class="metric-value" id="riskAnnVol">--</div>
+                    <div class="metric-subtitle">Daily StDev * √252</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Maximum Drawdown</div>
+                    <div class="metric-value down" id="riskMaxDD">--</div>
+                    <div class="metric-subtitle">Peak-to-trough worst drop</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Sharpe Ratio</div>
+                    <div class="metric-value" id="riskSharpe">--</div>
+                    <div class="metric-subtitle">Total risk-adjusted return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Sortino Ratio</div>
+                    <div class="metric-value" id="riskSortino">--</div>
+                    <div class="metric-subtitle">Downside risk-adjusted return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Daily VaR (95%)</div>
+                    <div class="metric-value down" id="riskVarHist">--</div>
+                    <div class="metric-subtitle">Historical 5th percentile</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Parametric VaR (95%)</div>
+                    <div class="metric-value down" id="riskVarParam">--</div>
+                    <div class="metric-subtitle">Gaussian 1.645σ threshold</div>
+                </div>
+            </div>
+
+            <!-- UNDERWATER DRAWDOWN CHART -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Underwater Drawdown Profile (% from All-Time High)</h2>
+                        <p>Measures the depth and duration of historical capital drawdowns</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskDrawdownChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 30-DAY ROLLING VOLATILITY CHART -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>30-Day Rolling Annualized Volatility Curve</h2>
+                        <p>Identifies regime transitions between low volatility expansion and high volatility liquidation</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="riskRollingVolChart"></canvas>
+                </div>
+            </div>
+
+            <!-- RISK DISTINCTION EXPLANATION -->
+            <div class="strategy-grid">
+                <div class="strategy-box">
+                    <h3>Understanding Volatility vs Downside Risk</h3>
+                    <div class="strategy-row">
+                        <span class="label">Symmetric Volatility</span>
+                        <span class="val">Penalizes both upside jumps and downside drops equally</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Downside Deviation</span>
+                        <span class="val">Focuses purely on harmful downside portfolio fluctuations</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Sortino vs Sharpe</span>
+                        <span class="val">Sortino > Sharpe indicates volatility is skewed to the upside</span>
+                    </div>
+                </div>
+
+                <div class="strategy-box">
+                    <h3>Value at Risk (VaR 95%) Interpretation</h3>
+                    <div class="strategy-row">
+                        <span class="label">Historical VaR</span>
+                        <span class="val">On 95% of days, loss will not exceed this percentage</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Parametric VaR</span>
+                        <span class="val">Theoretical loss expected assuming normal distribution</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Fat Tail Risk</span>
+                        <span class="val">Cryptocurrencies & tech equities typically have higher tail risk</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 5. CORRELATION SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-correlation" class="page-section">
+            <div class="header">
+                <div>
+                    <h1>Cross-Asset Correlation Analysis</h1>
+                    <p>Co-movement analysis, portfolio diversification matrices, and dynamic rolling correlation windows</p>
+                </div>
+                <div class="status-badge">
+                    ● Multi-Asset Matrix
+                </div>
+            </div>
+
+            <!-- HEATMAP PANEL -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>5-Year Cross-Asset Correlation Matrix Heatmap</h2>
+                        <p>Pearson correlation coefficient (-1.00 = negative, 0.00 = uncorrelated, +1.00 = positive)</p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadCorrelationMatrix()">🔄 Refresh Matrix</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="quantx-table" id="corrHeatmapTable">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Gold (GC=F)</th>
+                                <th>Bitcoin (BTC-USD)</th>
+                                <th>NVIDIA (NVDA)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Gold (GC=F)</strong></td>
+                                <td id="cell-gold-gold">1.00</td>
+                                <td id="cell-gold-bitcoin">--</td>
+                                <td id="cell-gold-nvidia">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bitcoin (BTC-USD)</strong></td>
+                                <td id="cell-bitcoin-gold">--</td>
+                                <td id="cell-bitcoin-bitcoin">1.00</td>
+                                <td id="cell-bitcoin-nvidia">--</td>
+                            </tr>
+                            <tr>
+                                <td><strong>NVIDIA (NVDA)</strong></td>
+                                <td id="cell-nvidia-gold">--</td>
+                                <td id="cell-nvidia-bitcoin">--</td>
+                                <td id="cell-nvidia-nvidia">1.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ROLLING CORRELATION PANEL -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Rolling Pairwise Correlation Over Time</h2>
+                        <p>Analyze how correlation between assets shifts across market cycles</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-secondary" id="btn-roll-30" onclick="loadRollingCorrelation(30)">30 Days</button>
+                        <button class="btn-secondary active" id="btn-roll-60" onclick="loadRollingCorrelation(60)">60 Days</button>
+                        <button class="btn-secondary" id="btn-roll-90" onclick="loadRollingCorrelation(90)">90 Days</button>
+                        <button class="btn-secondary" id="btn-roll-180" onclick="loadRollingCorrelation(180)">180 Days</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="correlationRollingChart"></canvas>
+                </div>
+            </div>
+
+            <!-- DIVERSIFICATION INSIGHTS -->
+            <div class="strategy-grid">
+                <div class="strategy-box">
+                    <h3>Portfolio Diversification Rules</h3>
+                    <div class="strategy-row">
+                        <span class="label">Correlation &lt; 0.30</span>
+                        <span class="val up">High Diversification (Ideal for Risk Reduction)</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Correlation 0.30 - 0.70</span>
+                        <span class="val">Moderate Diversification Benefit</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Correlation &gt; 0.70</span>
+                        <span class="val down">Low Diversification (Assets Move Together)</span>
+                    </div>
+                </div>
+
+                <div class="strategy-box">
+                    <h3>Current Pairwise Takeaways</h3>
+                    <div class="strategy-row">
+                        <span class="label">Gold vs Bitcoin</span>
+                        <span class="val" id="takeawayGoldBtc">Uncorrelated safe-haven vs digital store of value</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Gold vs NVIDIA</span>
+                        <span class="val" id="takeawayGoldNvda">Physical hedge vs aggressive semiconductor growth</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="label">Bitcoin vs NVIDIA</span>
+                        <span class="val" id="takeawayBtcNvda">High-beta liquidity & technology sentiment co-movement</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 6. TRADE HISTORY SECTION -->
+        <!-- ========================================================= -->
+        <section id="section-trades" class="page-section">
+            <div class="header">
+                <div>
+                    <h1>Backtest Trade Execution History</h1>
+                    <p>Granular chronological log of every entry, exit, position sizing, and transaction fee</p>
+                </div>
+                <div class="status-badge" id="tradesCountBadge">
+                    0 Executed Orders
+                </div>
+            </div>
+
+            <!-- SUMMARY BAR -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Total Orders</div>
+                    <div class="metric-value" id="thTotalTrades">0</div>
+                    <div class="metric-subtitle">Generated trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Buy Signals</div>
+                    <div class="metric-value up" id="thBuyTrades">0</div>
+                    <div class="metric-subtitle">Long entry orders</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Sell / Close Orders</div>
+                    <div class="metric-value down" id="thSellTrades">0</div>
+                    <div class="metric-subtitle">Exits & liquidations</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Total Fees Paid</div>
+                    <div class="metric-value" id="thTotalFees">₹0</div>
+                    <div class="metric-subtitle">Transaction slippage</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Strategy Used</div>
+                    <div class="metric-value" id="thStrategyUsed" style="font-size: 16px;">SMA</div>
+                    <div class="metric-subtitle">Model logic</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Asset Tested</div>
+                    <div class="metric-value" id="thAssetTested" style="font-size: 16px;">GOLD</div>
+                    <div class="metric-subtitle">Underlying asset</div>
+                </div>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="controls" style="grid-template-columns: auto 1fr auto; align-items: center;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-secondary active" id="btn-filter-all" onclick="filterTradeHistory('ALL')">All Trades</button>
+                    <button class="btn-secondary" id="btn-filter-buy" onclick="filterTradeHistory('BUY')">BUY Only</button>
+                    <button class="btn-secondary" id="btn-filter-sell" onclick="filterTradeHistory('SELL')">SELL Only</button>
+                </div>
+                <div>
+                    <input id="tradeSearchInput" type="text" placeholder="Search by date (YYYY-MM-DD) or price..." oninput="onTradeSearch()">
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="navigateTo('backtest')">
+                        🧮 Run New Backtest
+                    </button>
+                </div>
+            </div>
+
+            <!-- TRADE LOG TABLE -->
+            <div class="panel">
+                <div class="table-responsive">
+                    <table class="quantx-table" id="tradesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Asset</th>
+                                <th>Action</th>
+                                <th>Execution Price</th>
+                                <th>Units / Shares</th>
+                                <th>Transaction Fee</th>
+                                <th>Portfolio Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTableBody">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <div class="icon">📋</div>
+                                        <h3>No Backtest Run Yet</h3>
+                                        <p>Run a backtest in the Backtesting or Dashboard section to generate live trade execution logs.</p>
+                                        <button class="btn-primary" style="display: inline-flex;" onclick="runDefaultBacktestAndShowTrades()">
+                                            ▶ Run Sample Backtest Now
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        /* ================= GLOBAL STATE ================= */
+        const API_BASE = window.location.origin.includes("8000") 
+            ? window.location.origin 
+            : "http://127.0.0.1:8000";
+
+        let currentSection = "dashboard";
+        let activeRollingWindow = 60;
+        let lastTradesData = [];
+        let activeTradeFilter = "ALL";
+
+        // Chart.js Instances
+        let charts = {
+            dashPrice: null,
+            dashRegime: null,
+            dashEquity: null,
+            marketPrice: null,
+            marketCumulative: null,
+            marketRollingVol: null,
+            btEquity: null,
+            btSignals: null,
+            riskDrawdown: null,
+            riskRollingVol: null,
+            corrRolling: null
+        };
+
+        /* ================= QUANTX API KEY STATE & AUTH ================= */
+        const DEFAULT_QUANTX_API_KEY = "rc_43a33fc68f4641e598173a55da96b75af2d580ba0ad3b47a20b48c00b0582503";
+        let activeApiKey = localStorage.getItem("quantx_api_key") || DEFAULT_QUANTX_API_KEY;
+
+        function getAuthHeaders(extraHeaders = {}) {
+            return {
+                "Content-Type": "application/json",
+                "X-API-Key": activeApiKey,
+                ...extraHeaders
+            };
+        }
+
+        function updateApiKeyDisplay() {
+            const preview = activeApiKey ? `${activeApiKey.slice(0, 8)}...${activeApiKey.slice(-4)}` : "None";
+            const headerPreview = document.getElementById("headerKeyPreview");
+            const sidebarPreview = document.getElementById("sidebarKeyPreview");
+            const modalInput = document.getElementById("modalApiKeyInput");
+
+            if (headerPreview) headerPreview.innerText = preview;
+            if (sidebarPreview) sidebarPreview.innerText = preview;
+            if (modalInput) modalInput.value = activeApiKey;
+        }
+
+        function openApiKeyModal() {
+            updateApiKeyDisplay();
+            const modal = document.getElementById("apiKeyModal");
+            if (modal) modal.classList.add("open");
+        }
+
+        function closeApiKeyModal() {
+            const modal = document.getElementById("apiKeyModal");
+            if (modal) modal.classList.remove("open");
+        }
+
+        function closeApiKeyModalOnBackdrop(e) {
+            if (e.target.id === "apiKeyModal") closeApiKeyModal();
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById("modalApiKeyInput");
+            const btn = document.getElementById("toggleKeyBtn");
+            if (!input || !btn) return;
+            if (input.type === "password") {
+                input.type = "text";
+                btn.innerText = "Hide";
+            } else {
+                input.type = "password";
+                btn.innerText = "Show";
+            }
+        }
+
+        function copyApiKeyToClipboard() {
+            navigator.clipboard.writeText(activeApiKey).then(() => {
+                showToast("Key Copied", "QuantX API Key copied to clipboard", "info");
+            }).catch(() => {
+                showToast("Copy Failed", "Please copy the key manually", "warning");
+            });
+        }
+
+        function resetDefaultApiKey() {
+            activeApiKey = DEFAULT_QUANTX_API_KEY;
+            localStorage.setItem("quantx_api_key", activeApiKey);
+            updateApiKeyDisplay();
+            showToast("Key Reset", "Reset to default QuantX API Key (rc_43a3...2503)", "info");
+        }
+
+        async function saveAndVerifyApiKey() {
+            const input = document.getElementById("modalApiKeyInput");
+            const keyVal = (input.value || "").trim();
+
+            if (!keyVal) {
+                showToast("Invalid Key", "API Key cannot be empty", "warning");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api-key/status`, {
+                    headers: { "X-API-Key": keyVal }
+                });
+                const data = await res.json();
+                if (res.ok && data.valid) {
+                    activeApiKey = keyVal;
+                    localStorage.setItem("quantx_api_key", activeApiKey);
+                    updateApiKeyDisplay();
+                    closeApiKeyModal();
+                    showToast("API Key Verified", `Authentication active (${data.tier})`, "success");
+                } else {
+                    showToast("Verification Failed", "The provided API key was rejected by the backend", "error");
+                }
+            } catch (err) {
+                showToast("Connection Error", "Failed to connect to backend verification endpoint", "error");
+            }
+        }
+
+        /* ================= TOAST NOTIFICATION SYSTEM ================= */
+        function showToast(title, message, type = "error", duration = 4500) {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+
+            let icon = "⚠️";
+            if (type === "success") icon = "✓";
+            else if (type === "error") icon = "✕";
+            else if (type === "info") icon = "ℹ️";
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <div class="toast-body">
+                    <div class="toast-title">${escapeHtml(title)}</div>
+                    <div class="toast-message">${escapeHtml(message)}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = "toastFadeOut 0.3s forwards";
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        /* ================= INPUT VALIDATION LOGIC ================= */
+        function validateBtCapital() {
+            const input = document.getElementById("btCapital");
+            const err = document.getElementById("btCapitalErr");
+            if (!input) return true;
+            const val = Number(input.value);
+
+            if (isNaN(val) || input.value.trim() === "" || val < 1000 || val > 1000000000) {
+                input.classList.add("is-invalid");
+                input.classList.remove("is-valid");
+                if (err) {
+                    err.innerText = "Capital must be between ₹1,000 and ₹1,000,000,000";
+                    err.classList.add("active");
+                }
+                return false;
+            } else {
+                input.classList.remove("is-invalid");
+                input.classList.add("is-valid");
+                if (err) err.classList.remove("active");
+                return true;
+            }
+        }
+
+        function validateBtCost() {
+            const input = document.getElementById("btCost");
+            const err = document.getElementById("btCostErr");
+            if (!input) return true;
+            const val = Number(input.value);
+
+            if (isNaN(val) || input.value.trim() === "" || val < 0 || val > 10) {
+                input.classList.add("is-invalid");
+                input.classList.remove("is-valid");
+                if (err) {
+                    err.innerText = "Fee must be between 0.00% and 10.00%";
+                    err.classList.add("active");
+                }
+                return false;
+            } else {
+                input.classList.remove("is-invalid");
+                input.classList.add("is-valid");
+                if (err) err.classList.remove("active");
+                return true;
+            }
+        }
+
+        function validateBtWindows() {
+            const shortIn = document.getElementById("btShortWindow");
+            const longIn = document.getElementById("btLongWindow");
+            const shortErr = document.getElementById("btShortWindowErr");
+            const longErr = document.getElementById("btLongWindowErr");
+            if (!shortIn || !longIn) return true;
+
+            const shortW = Number(shortIn.value);
+            const longW = Number(longIn.value);
+
+            let valid = true;
+
+            if (isNaN(shortW) || shortIn.value.trim() === "" || shortW < 2 || shortW > 500) {
+                shortIn.classList.add("is-invalid");
+                shortIn.classList.remove("is-valid");
+                if (shortErr) {
+                    shortErr.innerText = "Fast MA window must be between 2 and 500";
+                    shortErr.classList.add("active");
+                }
+                valid = false;
+            } else {
+                shortIn.classList.remove("is-invalid");
+                shortIn.classList.add("is-valid");
+                if (shortErr) shortErr.classList.remove("active");
+            }
+
+            if (isNaN(longW) || longIn.value.trim() === "" || longW < 3 || longW > 1000) {
+                longIn.classList.add("is-invalid");
+                longIn.classList.remove("is-valid");
+                if (longErr) {
+                    longErr.innerText = "Slow MA window must be between 3 and 1,000";
+                    longErr.classList.add("active");
+                }
+                valid = false;
+            } else {
+                longIn.classList.remove("is-invalid");
+                longIn.classList.add("is-valid");
+                if (longErr) longErr.classList.remove("active");
+            }
+
+            if (valid) {
+                if (shortW >= longW) {
+                    shortIn.classList.add("is-invalid");
+                    longIn.classList.add("is-invalid");
+                    if (shortErr) {
+                        shortErr.innerText = `Fast MA (${shortW}) must be strictly less than Slow MA (${longW})`;
+                        shortErr.classList.add("active");
+                    }
+                    if (longErr) {
+                        longErr.innerText = `Slow MA (${longW}) must be strictly greater than Fast MA (${shortW})`;
+                        longErr.classList.add("active");
+                    }
+                    return false;
+                } else {
+                    shortIn.classList.remove("is-invalid");
+                    longIn.classList.remove("is-invalid");
+                    shortIn.classList.add("is-valid");
+                    longIn.classList.add("is-valid");
+                    if (shortErr) shortErr.classList.remove("active");
+                    if (longErr) longErr.classList.remove("active");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function validateAllBtInputs() {
+            const capOk = validateBtCapital();
+            const costOk = validateBtCost();
+            const winOk = validateBtWindows();
+            return capOk && costOk && winOk;
+        }
+
+        function validateDashCapital() {
+            const input = document.getElementById("dashCapital");
+            const err = document.getElementById("dashCapitalErr");
+            if (!input) return true;
+            const val = Number(input.value);
+
+            if (isNaN(val) || input.value.trim() === "" || val < 1000 || val > 1000000000) {
+                input.classList.add("is-invalid");
+                input.classList.remove("is-valid");
+                if (err) {
+                    err.innerText = "Capital must be between ₹1,000 and ₹1,000,000,000";
+                    err.classList.add("active");
+                }
+                return false;
+            } else {
+                input.classList.remove("is-invalid");
+                input.classList.add("is-valid");
+                if (err) err.classList.remove("active");
+                return true;
+            }
+        }
+
+        /* ================= SPA ROUTING ================= */
+        function navigateTo(sectionId) {
+            currentSection = sectionId;
+
+            // 1. Update Sidebar Active Item
+            document.querySelectorAll(".nav-item").forEach(item => {
+                item.classList.remove("active");
+            });
+            const targetNav = document.getElementById("nav-" + sectionId);
+            if (targetNav) targetNav.classList.add("active");
+
+            // 2. Switch Active Page Section
+            document.querySelectorAll(".page-section").forEach(sec => {
+                sec.classList.remove("active");
+            });
+            const targetSection = document.getElementById("section-" + sectionId);
+            if (targetSection) {
+                targetSection.classList.add("active");
+            }
+
+            // 3. Update URL Hash without reload
+            window.location.hash = sectionId;
+
+            // 4. Resize and Trigger Section-Specific Initializers
+            setTimeout(() => {
+                Object.values(charts).forEach(c => {
+                    if (c) c.resize();
+                });
+
+                if (sectionId === "market" && !charts.marketPrice) {
+                    loadMarketAnalysis();
+                } else if (sectionId === "risk" && !charts.riskDrawdown) {
+                    loadRiskAnalysis();
+                } else if (sectionId === "correlation" && !charts.corrRolling) {
+                    loadCorrelationMatrix();
+                    loadRollingCorrelation(activeRollingWindow);
+                } else if (sectionId === "trades") {
+                    renderTradeHistoryTable();
+                }
+            }, 60);
+        }
+
+        /* ================= 1. DASHBOARD LOGIC ================= */
+        async function loadDashboardOverview() {
+            const assets = ["gold", "bitcoin", "nvidia"];
+            for (const a of assets) {
+                try {
+                    const res = await fetch(`${API_BASE}/analysis/${a}`, {
+                        headers: getAuthHeaders()
+                    });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    
+                    const priceEl = document.getElementById(`dash-${a === 'bitcoin' ? 'btc' : a === 'nvidia' ? 'nvda' : 'gold'}-price`);
+                    const retEl = document.getElementById(`dash-${a === 'bitcoin' ? 'btc' : a === 'nvidia' ? 'nvda' : 'gold'}-return`);
+                    const volEl = document.getElementById(`dash-${a === 'bitcoin' ? 'btc' : a === 'nvidia' ? 'nvda' : 'gold'}-vol`);
+                    const sharpeEl = document.getElementById(`dash-${a === 'bitcoin' ? 'btc' : a === 'nvidia' ? 'nvda' : 'gold'}-sharpe`);
+                    const ddEl = document.getElementById(`dash-${a === 'bitcoin' ? 'btc' : a === 'nvidia' ? 'nvda' : 'gold'}-dd`);
+
+                    if (priceEl && data.latest_price) priceEl.innerText = "$" + Number(data.latest_price).toLocaleString();
+                    if (retEl && data.daily_return !== undefined) {
+                        const r = Number(data.daily_return);
+                        retEl.innerText = (r >= 0 ? "+" : "") + r.toFixed(2) + "%";
+                        retEl.className = "badge " + (r >= 0 ? "badge-buy" : "badge-sell");
+                    }
+                    if (volEl && data.volatility) volEl.innerText = Number(data.volatility).toFixed(1) + "%";
+                    if (sharpeEl && data.sharpe_ratio) sharpeEl.innerText = Number(data.sharpe_ratio).toFixed(2);
+                    if (ddEl && data.max_drawdown) ddEl.innerText = Number(data.max_drawdown).toFixed(1) + "%";
+                } catch (e) {
+                    console.warn(`Dashboard overview fetch error for ${a}:`, e);
+                }
+            }
+        }
+
+        function selectDashboardAsset(asset) {
+            document.getElementById("dashAsset").value = asset;
+            ["gold", "bitcoin", "nvidia"].forEach(a => {
+                const card = document.getElementById("dash-card-" + a);
+                if (card) {
+                    if (a === asset) card.classList.add("selected");
+                    else card.classList.remove("selected");
+                }
+            });
+            runDashboardBacktest();
+        }
+
+        async function runDashboardBacktest() {
+            if (!validateDashCapital()) {
+                showToast("Validation Error", "Initial capital must be between ₹1,000 and ₹1,000,000,000", "warning");
+                return;
+            }
+
+            const asset = document.getElementById("dashAsset").value;
+            const strategy = document.getElementById("dashStrategy").value;
+            const period = document.getElementById("dashPeriod").value;
+            const capital = Number(document.getElementById("dashCapital").value);
+            const runBtn = document.getElementById("dashRunBtn");
+
+            if (runBtn) {
+                runBtn.disabled = true;
+                runBtn.innerText = "⏳ SIMULATING...";
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/backtest`, {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        asset: asset,
+                        strategy: strategy,
+                        period: period,
+                        initial_capital: capital,
+                        transaction_cost: 0.001,
+                        short_window: 20,
+                        long_window: 50
+                    })
+                });
+
+                if (!res.ok) {
+                    const errPayload = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+                    const errMsg = errPayload.detail || errPayload.message || `Simulation failed (HTTP ${res.status})`;
+                    showToast("Dashboard Error", errMsg, "error");
+                    throw new Error(errMsg);
+                }
+                const data = await res.json();
+
+                // Store trades globally for Trade History tab
+                if (data.trades_history) {
+                    lastTradesData = data.trades_history;
+                    updateTradeHistoryBadges(data.trades_history, strategy.toUpperCase(), asset.toUpperCase());
+                }
+
+                // Update Metric cards
+                const ret = Number(data.metrics.total_return);
+                const retEl = document.getElementById("dashMetricReturn");
+                if (retEl) {
+                    retEl.innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+                    retEl.className = "metric-value " + (ret >= 0 ? "up" : "down");
+                }
+                const capEl = document.getElementById("dashMetricCapital");
+                if (capEl) capEl.innerText = "₹" + Math.round(data.metrics.final_value).toLocaleString("en-IN");
+                document.getElementById("dashMetricSharpe").innerText = Number(data.metrics.sharpe_ratio).toFixed(2);
+                document.getElementById("dashMetricVol").innerText = Number(data.metrics.volatility).toFixed(2) + "%";
+                document.getElementById("dashMetricDD").innerText = Number(data.metrics.max_drawdown).toFixed(2) + "%";
+                document.getElementById("dashMetricTrades").innerText = data.trades;
+
+                // Update Strategy breakdown
+                document.getElementById("dashStratName").innerText = strategy.toUpperCase() + " Model";
+                document.getElementById("dashInitAlloc").innerText = "₹" + capital.toLocaleString("en-IN");
+                document.getElementById("dashEndingVal").innerText = "₹" + Math.round(data.metrics.final_value).toLocaleString("en-IN");
+                document.getElementById("dashStratReturn").innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+                document.getElementById("dashStratDD").innerText = Number(data.metrics.max_drawdown).toFixed(2) + "%";
+
+                const bnhRet = Number(data.buy_and_hold.return);
+                document.getElementById("dashCompStratRet").innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+                document.getElementById("dashCompBnhRet").innerText = (bnhRet >= 0 ? "+" : "") + bnhRet.toFixed(2) + "%";
+                document.getElementById("dashCompStratSharpe").innerText = Number(data.metrics.sharpe_ratio).toFixed(2);
+                document.getElementById("dashCompBnhSharpe").innerText = data.buy_and_hold.sharpe_ratio !== undefined ? Number(data.buy_and_hold.sharpe_ratio).toFixed(2) : "N/A";
+                const alpha = ret - bnhRet;
+                const alphaEl = document.getElementById("dashCompAlpha");
+                alphaEl.innerText = (alpha >= 0 ? "+" : "") + alpha.toFixed(2) + "%";
+                alphaEl.className = "val " + (alpha >= 0 ? "up" : "down");
+
+                // Render Dashboard Price Chart
+                renderDashboardPriceChart(data.chart, asset, strategy);
+
+                // Render Dashboard Equity Curve
+                renderDashboardEquityChart(data.chart, capital, strategy);
+
+                // Render Dashboard Regime Chart
+                renderDashboardRegimeChart(data.chart);
+
+            } catch (err) {
+                console.error("Dashboard backtest error:", err);
+            } finally {
+                if (runBtn) {
+                    runBtn.disabled = false;
+                    runBtn.innerText = "▶ RUN SIMULATION";
+                }
+            }
+        }
+
+        function renderDashboardPriceChart(chartData, asset, strategy) {
+            const ctx = document.getElementById("dashPriceChart").getContext("2d");
+            const dates = chartData.map(p => p.date);
+            const prices = chartData.map(p => p.price);
+            const isEma = strategy === "ema";
+            const shortMA = chartData.map(p => isEma ? p.ema_short : p.sma_short);
+            const longMA = chartData.map(p => isEma ? p.ema_long : p.sma_long);
+
+            if (charts.dashPrice) charts.dashPrice.destroy();
+
+            charts.dashPrice = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: `${asset.toUpperCase()} Price`,
+                            data: prices,
+                            borderColor: "#38bdf8",
+                            backgroundColor: "rgba(56, 189, 248, 0.05)",
+                            borderWidth: 2,
+                            fill: true,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: isEma ? "EMA 20" : "SMA 20",
+                            data: shortMA,
+                            borderColor: "#f59e0b",
+                            borderWidth: 1.6,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: isEma ? "EMA 50" : "SMA 50",
+                            data: longMA,
+                            borderColor: "#a855f7",
+                            borderWidth: 1.6,
+                            pointRadius: 0,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: getStandardChartOptions("$")
+            });
+        }
+
+        function renderDashboardEquityChart(chartData, initialCapital, strategy) {
+            const ctx = document.getElementById("dashEquityChart").getContext("2d");
+            const dates = chartData.map(p => p.date);
+            const stratEquity = chartData.map(p => p.portfolio);
+            const firstPrice = chartData[0].price;
+            const bnhEquity = chartData.map(p => initialCapital * (p.price / firstPrice));
+
+            if (charts.dashEquity) charts.dashEquity.destroy();
+
+            charts.dashEquity = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: `${strategy.toUpperCase()} Portfolio`,
+                            data: stratEquity,
+                            borderColor: "#38bdf8",
+                            backgroundColor: "rgba(56, 189, 248, 0.08)",
+                            borderWidth: 2.5,
+                            fill: true,
+                            pointRadius: 0,
+                            tension: 0.15
+                        },
+                        {
+                            label: "Buy & Hold Benchmark",
+                            data: bnhEquity,
+                            borderColor: "#94a3b8",
+                            borderWidth: 1.8,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.15
+                        }
+                    ]
+                },
+                options: getStandardChartOptions("₹")
+            });
+        }
+
+        function renderDashboardRegimeChart(chartData) {
+            const ctx = document.getElementById("dashRegimeChart").getContext("2d");
+            let bull = 0, bear = 0, highVol = 0, lowVol = 0;
+            for (let i = 1; i < chartData.length; i++) {
+                const ret = (chartData[i].price - chartData[i - 1].price) / chartData[i - 1].price;
+                const longMa = chartData[i].sma_long || chartData[i].ema_long || chartData[i].price;
+                if (Math.abs(ret) > 0.02) highVol++;
+                else if (chartData[i].price >= longMa && ret >= 0) bull++;
+                else if (chartData[i].price < longMa && ret < 0) bear++;
+                else lowVol++;
+            }
+            const total = Math.max(1, bull + bear + highVol + lowVol);
+
+            if (charts.dashRegime) charts.dashRegime.destroy();
+
+            charts.dashRegime = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Bull Regime", "Bear Regime", "High Volatility", "Low Volatility"],
+                    datasets: [{
+                        data: [
+                            Math.round((bull / total) * 100),
+                            Math.round((bear / total) * 100),
+                            Math.round((highVol / total) * 100),
+                            Math.round((lowVol / total) * 100)
+                        ],
+                        backgroundColor: ["#10b981", "#ef4444", "#f59e0b", "#38bdf8"],
+                        borderColor: "#111827",
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { color: "#94a3b8", padding: 12, boxWidth: 12 } }
+                    },
+                    cutout: "68%"
+                }
+            });
+        }
+
+        /* ================= 2. MARKET ANALYSIS LOGIC ================= */
+        async function loadMarketAnalysis() {
+            const asset = document.getElementById("marketAsset").value;
+            const period = document.getElementById("marketPeriod").value;
+            const btn = document.getElementById("marketRefreshBtn");
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "⏳ FETCHING...";
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/market-analysis/${asset}?period=${period}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error("Market data fetch failed");
+                const data = await res.json();
+
+                // Summary stats
+                document.getElementById("mktPrice").innerText = "$" + data.summary.latest_price.toLocaleString();
+                document.getElementById("mktHigh").innerText = "$" + data.summary.high_52w.toLocaleString();
+                document.getElementById("mktLow").innerText = "$" + data.summary.low_52w.toLocaleString();
+                const ret = data.summary.total_return;
+                const mktRetEl = document.getElementById("mktReturn");
+                mktRetEl.innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+                mktRetEl.className = "metric-value " + (ret >= 0 ? "up" : "down");
+                document.getElementById("mktVol").innerText = data.summary.annualized_vol.toFixed(2) + "%";
+
+                const latestPoint = data.timeseries[data.timeseries.length - 1];
+                const smaStatus = (latestPoint.sma20 && latestPoint.price > latestPoint.sma20) ? "BULLISH (Above)" : "BEARISH (Below)";
+                const smaEl = document.getElementById("mktSmaTrend");
+                smaEl.innerText = smaStatus;
+                smaEl.className = "metric-value " + (latestPoint.price > latestPoint.sma20 ? "up" : "down");
+
+                // Render Charts
+                renderMarketPriceChart(data.timeseries, asset);
+                renderMarketCumulativeChart(data.timeseries);
+                renderMarketRollingVolChart(data.timeseries);
+
+            } catch (err) {
+                console.error("Market analysis error:", err);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "🔄 REFRESH ANALYSIS";
+                }
+            }
+        }
+
+        function renderMarketPriceChart(ts, asset) {
+            const ctx = document.getElementById("marketPriceChart").getContext("2d");
+            const dates = ts.map(t => t.date);
+            const prices = ts.map(t => t.price);
+            const sma20 = ts.map(t => t.sma20);
+            const sma50 = ts.map(t => t.sma50);
+            const ema20 = ts.map(t => t.ema20);
+            const ema50 = ts.map(t => t.ema50);
+
+            if (charts.marketPrice) charts.marketPrice.destroy();
+
+            charts.marketPrice = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: `${asset.toUpperCase()} Close`,
+                            data: prices,
+                            borderColor: "#38bdf8",
+                            borderWidth: 2.2,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: "SMA 20",
+                            data: sma20,
+                            borderColor: "#f59e0b",
+                            borderWidth: 1.6,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: "SMA 50",
+                            data: sma50,
+                            borderColor: "#a855f7",
+                            borderWidth: 1.6,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: "EMA 20",
+                            data: ema20,
+                            borderColor: "#10b981",
+                            borderWidth: 1.6,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: "EMA 50",
+                            data: ema50,
+                            borderColor: "#ec4899",
+                            borderWidth: 1.6,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: getStandardChartOptions("$")
+            });
+        }
+
+        function renderMarketCumulativeChart(ts) {
+            const ctx = document.getElementById("marketCumulativeChart").getContext("2d");
+            const dates = ts.map(t => t.date);
+            const cumReturns = ts.map(t => t.cumulative_return);
+
+            if (charts.marketCumulative) charts.marketCumulative.destroy();
+
+            charts.marketCumulative = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: "Cumulative Return %",
+                        data: cumReturns,
+                        borderColor: "#38bdf8",
+                        backgroundColor: "rgba(56, 189, 248, 0.08)",
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1
+                    }]
+                },
+                options: getStandardChartOptions("%")
+            });
+        }
+
+        function renderMarketRollingVolChart(ts) {
+            const ctx = document.getElementById("marketRollingVolChart").getContext("2d");
+            const dates = ts.map(t => t.date);
+            const vols = ts.map(t => t.rolling_vol);
+
+            if (charts.marketRollingVol) charts.marketRollingVol.destroy();
+
+            charts.marketRollingVol = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: "20-Day Rolling Volatility %",
+                        data: vols,
+                        borderColor: "#f59e0b",
+                        backgroundColor: "rgba(245, 158, 11, 0.08)",
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.15
+                    }]
+                },
+                options: getStandardChartOptions("%")
+            });
+        }
+
+        /* ================= 3. BACKTESTING ENGINE LOGIC ================= */
+        async function runBacktestEngine() {
+            if (!validateAllBtInputs()) {
+                showToast("Validation Error", "Please resolve the highlighted parameter errors before running backtest", "warning");
+                return;
+            }
+
+            const asset = document.getElementById("btAsset").value;
+            const strategy = document.getElementById("btStrategy").value;
+            const capital = Number(document.getElementById("btCapital").value);
+            const cost = Number(document.getElementById("btCost").value) / 100;
+            const shortW = Number(document.getElementById("btShortWindow").value);
+            const longW = Number(document.getElementById("btLongWindow").value);
+            const period = document.getElementById("btPeriod").value;
+            const runBtn = document.getElementById("btRunBtn");
+
+            if (runBtn) {
+                runBtn.disabled = true;
+                runBtn.innerText = "⏳ COMPUTING BACKTEST...";
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/backtest`, {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        asset: asset,
+                        strategy: strategy,
+                        initial_capital: capital,
+                        transaction_cost: cost,
+                        short_window: shortW,
+                        long_window: longW,
+                        period: period
+                    })
+                });
+
+                if (!res.ok) {
+                    const errPayload = await res.json().catch(() => ({ detail: `Simulation failed (HTTP ${res.status})` }));
+                    const errMsg = errPayload.detail || errPayload.message || `Simulation failed (HTTP ${res.status})`;
+                    showToast("Simulation / Validation Error", errMsg, "error");
+                    throw new Error(errMsg);
+                }
+                const data = await res.json();
+                showToast("Backtest Complete", `Successfully simulated ${asset.toUpperCase()} with ${strategy.toUpperCase()}`, "success");
+
+                // Update Trades state for Trade History
+                if (data.trades_history) {
+                    lastTradesData = data.trades_history;
+                    updateTradeHistoryBadges(data.trades_history, strategy.toUpperCase(), asset.toUpperCase());
+                }
+
+                // Update scorecard
+                const ret = Number(data.metrics.total_return);
+                const retEl = document.getElementById("btTotalReturn");
+                retEl.innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+                retEl.className = "metric-value " + (ret >= 0 ? "up" : "down");
+                document.getElementById("btFinalCapital").innerText = "₹" + Math.round(data.metrics.final_value).toLocaleString("en-IN");
+                document.getElementById("btSharpe").innerText = Number(data.metrics.sharpe_ratio).toFixed(2);
+                document.getElementById("btVol").innerText = Number(data.metrics.volatility).toFixed(2) + "%";
+                document.getElementById("btDrawdown").innerText = Number(data.metrics.max_drawdown).toFixed(2) + "%";
+                document.getElementById("btTrades").innerText = data.trades;
+
+                // Update breakdown cards
+                document.getElementById("btModelName").innerText = strategy.toUpperCase() + " Strategy";
+                document.getElementById("btWindowsLabel").innerText = `${shortW}d / ${longW}d`;
+                document.getElementById("btCostLabel").innerText = (cost * 100).toFixed(2) + "%";
+                document.getElementById("btModelReturn").innerText = (ret >= 0 ? "+" : "") + ret.toFixed(2) + "%";
+
+                const bnhRet = Number(data.buy_and_hold.return);
+                document.getElementById("btBnhReturn").innerText = (bnhRet >= 0 ? "+" : "") + bnhRet.toFixed(2) + "%";
+                document.getElementById("btBnhEnding").innerText = "₹" + Math.round(data.buy_and_hold.final_value).toLocaleString("en-IN");
+                document.getElementById("btBnhSharpe").innerText = data.buy_and_hold.sharpe_ratio !== undefined ? Number(data.buy_and_hold.sharpe_ratio).toFixed(2) : "N/A";
+                const alpha = ret - bnhRet;
+                const alphaEl = document.getElementById("btAlphaDiff");
+                alphaEl.innerText = (alpha >= 0 ? "+" : "") + alpha.toFixed(2) + "%";
+                alphaEl.className = "val " + (alpha >= 0 ? "up" : "down");
+
+                // Render Charts
+                renderBacktestEquityChart(data.chart, capital, strategy);
+                renderBacktestSignalsChart(data.chart, asset, data.trades_history || []);
+
+            } catch (err) {
+                console.error("Backtest engine error:", err);
+            } finally {
+                if (runBtn) {
+                    runBtn.disabled = false;
+                    runBtn.innerText = "▶ RUN BACKTEST";
+                }
+            }
+        }
+
+        function renderBacktestEquityChart(chartData, initialCapital, strategy) {
+            const ctx = document.getElementById("btEquityChart").getContext("2d");
+            const dates = chartData.map(p => p.date);
+            const stratEq = chartData.map(p => p.portfolio);
+            const firstPrice = chartData[0].price;
+            const bnhEq = chartData.map(p => initialCapital * (p.price / firstPrice));
+
+            if (charts.btEquity) charts.btEquity.destroy();
+
+            charts.btEquity = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: `${strategy.toUpperCase()} Portfolio Equity`,
+                            data: stratEq,
+                            borderColor: "#38bdf8",
+                            backgroundColor: "rgba(56, 189, 248, 0.08)",
+                            fill: true,
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            tension: 0.15
+                        },
+                        {
+                            label: "Buy & Hold Benchmark",
+                            data: bnhEq,
+                            borderColor: "#94a3b8",
+                            borderWidth: 1.8,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.15
+                        }
+                    ]
+                },
+                options: getStandardChartOptions("₹")
+            });
+        }
+
+        function renderBacktestSignalsChart(chartData, asset, tradeRecords) {
+            const ctx = document.getElementById("btSignalsChart").getContext("2d");
+            const dates = chartData.map(p => p.date);
+            const prices = chartData.map(p => p.price);
+
+            // Create buy/sell signal markers mapped to dates
+            const buyMap = {};
+            const sellMap = {};
+            tradeRecords.forEach(t => {
+                if (t.action === "BUY") buyMap[t.date] = t.price;
+                else if (t.action === "SELL" || t.action === "CLOSE") sellMap[t.date] = t.price;
+            });
+
+            const buyPoints = dates.map(d => buyMap[d] || null);
+            const sellPoints = dates.map(d => sellMap[d] || null);
+
+            if (charts.btSignals) charts.btSignals.destroy();
+
+            charts.btSignals = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: `${asset.toUpperCase()} Price`,
+                            data: prices,
+                            borderColor: "#38bdf8",
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: "BUY Entry Points",
+                            data: buyPoints,
+                            borderColor: "#4ade80",
+                            backgroundColor: "#4ade80",
+                            pointStyle: "triangle",
+                            pointRadius: 7,
+                            pointHoverRadius: 9,
+                            showLine: false
+                        },
+                        {
+                            label: "SELL Exit Points",
+                            data: sellPoints,
+                            borderColor: "#f87171",
+                            backgroundColor: "#f87171",
+                            pointStyle: "rectRot",
+                            pointRadius: 7,
+                            pointHoverRadius: 9,
+                            showLine: false
+                        }
+                    ]
+                },
+                options: getStandardChartOptions("$")
+            });
+        }
+
+        /* ================= 4. RISK ANALYSIS LOGIC ================= */
+        async function loadRiskAnalysis() {
+            const asset = document.getElementById("riskAsset").value;
+            const period = document.getElementById("riskPeriod").value;
+            const btn = document.getElementById("riskRefreshBtn");
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "⚡ CALCULATING...";
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/risk-analysis/${asset}?period=${period}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error("Risk analytics failed");
+                const data = await res.json();
+
+                // Metrics
+                document.getElementById("riskAnnVol").innerText = data.metrics.annualized_volatility.toFixed(2) + "%";
+                document.getElementById("riskMaxDD").innerText = data.metrics.max_drawdown.toFixed(2) + "%";
+                document.getElementById("riskSharpe").innerText = data.metrics.sharpe_ratio.toFixed(2);
+                document.getElementById("riskSortino").innerText = data.metrics.sortino_ratio.toFixed(2);
+                document.getElementById("riskVarHist").innerText = data.metrics.var_95_daily.toFixed(2) + "%";
+                document.getElementById("riskVarParam").innerText = data.metrics.var_95_parametric.toFixed(2) + "%";
+
+                // Charts
+                renderRiskDrawdownChart(data.timeseries);
+                renderRiskRollingVolChart(data.timeseries);
+
+            } catch (err) {
+                console.error("Risk analysis error:", err);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "⚡ CALCULATE RISK METRICS";
+                }
+            }
+        }
+
+        function renderRiskDrawdownChart(ts) {
+            const ctx = document.getElementById("riskDrawdownChart").getContext("2d");
+            const dates = ts.map(t => t.date);
+            const drawdowns = ts.map(t => t.drawdown);
+
+            if (charts.riskDrawdown) charts.riskDrawdown.destroy();
+
+            charts.riskDrawdown = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: "Drawdown from Peak (%)",
+                        data: drawdowns,
+                        borderColor: "#f87171",
+                        backgroundColor: "rgba(248, 113, 113, 0.15)",
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1
+                    }]
+                },
+                options: getStandardChartOptions("%")
+            });
+        }
+
+        function renderRiskRollingVolChart(ts) {
+            const ctx = document.getElementById("riskRollingVolChart").getContext("2d");
+            const dates = ts.map(t => t.date);
+            const vols = ts.map(t => t.rolling_vol);
+
+            if (charts.riskRollingVol) charts.riskRollingVol.destroy();
+
+            charts.riskRollingVol = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: "30-Day Annualized Volatility (%)",
+                        data: vols,
+                        borderColor: "#f59e0b",
+                        backgroundColor: "rgba(245, 158, 11, 0.08)",
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.15
+                    }]
+                },
+                options: getStandardChartOptions("%")
+            });
+        }
+
+        /* ================= 5. CORRELATION LOGIC ================= */
+        async function loadCorrelationMatrix() {
+            try {
+                const res = await fetch(`${API_BASE}/correlation`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error("Correlation matrix failed");
+                const data = await res.json();
+                const corr = data.correlation;
+
+                const assets = ["gold", "bitcoin", "nvidia"];
+                assets.forEach(r => {
+                    assets.forEach(c => {
+                        const cell = document.getElementById(`cell-${r}-${c}`);
+                        if (cell && corr[r] && corr[r][c] !== undefined) {
+                            const val = Number(corr[r][c]);
+                            cell.innerText = val.toFixed(2);
+                            
+                            // Style heatmap cell based on correlation strength
+                            if (val === 1.0) {
+                                cell.style.background = "rgba(56, 189, 248, 0.2)";
+                                cell.style.color = "#38bdf8";
+                            } else if (val >= 0.5) {
+                                cell.style.background = "rgba(74, 222, 128, 0.15)";
+                                cell.style.color = "#4ade80";
+                            } else if (val >= 0.2) {
+                                cell.style.background = "rgba(56, 189, 248, 0.1)";
+                                cell.style.color = "#93c5fd";
+                            } else if (val >= 0) {
+                                cell.style.background = "rgba(148, 163, 184, 0.08)";
+                                cell.style.color = "#cbd5e1";
+                            } else {
+                                cell.style.background = "rgba(248, 113, 113, 0.15)";
+                                cell.style.color = "#f87171";
+                            }
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error("Correlation matrix error:", err);
+            }
+        }
+
+        async function loadRollingCorrelation(windowDays) {
+            activeRollingWindow = windowDays;
+
+            // Update button styles
+            [30, 60, 90, 180].forEach(w => {
+                const btn = document.getElementById(`btn-roll-${w}`);
+                if (btn) {
+                    if (w === windowDays) btn.classList.add("active");
+                    else btn.classList.remove("active");
+                }
+            });
+
+            try {
+                const res = await fetch(`${API_BASE}/correlation/rolling?window=${windowDays}&period=5y`, {
+                    headers: getAuthHeaders()
+                });
+                if (!res.ok) throw new Error("Rolling correlation failed");
+                const data = await res.json();
+
+                const dates = data.timeseries.map(t => t.date);
+                const gb = data.timeseries.map(t => t.gold_bitcoin);
+                const gn = data.timeseries.map(t => t.gold_nvidia);
+                const bn = data.timeseries.map(t => t.bitcoin_nvidia);
+
+                const ctx = document.getElementById("correlationRollingChart").getContext("2d");
+                if (charts.corrRolling) charts.corrRolling.destroy();
+
+                charts.corrRolling = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: "Gold vs Bitcoin",
+                                data: gb,
+                                borderColor: "#f59e0b",
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.15
+                            },
+                            {
+                                label: "Gold vs NVIDIA",
+                                data: gn,
+                                borderColor: "#38bdf8",
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.15
+                            },
+                            {
+                                label: "Bitcoin vs NVIDIA",
+                                data: bn,
+                                borderColor: "#c084fc",
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.15
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: "#9ca3af", boxWidth: 12, padding: 15 } },
+                            tooltip: {
+                                backgroundColor: "#111827",
+                                titleColor: "#f3f4f6",
+                                bodyColor: "#d1d5db",
+                                borderColor: "#374151",
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: "rgba(255, 255, 255, 0.04)" },
+                                ticks: { color: "#6b7280", maxTicksLimit: 10 }
+                            },
+                            y: {
+                                min: -1.0,
+                                max: 1.0,
+                                grid: { color: "rgba(255, 255, 255, 0.04)" },
+                                ticks: { color: "#6b7280" }
+                            }
+                        }
+                    }
+                });
+
+            } catch (err) {
+                console.error("Rolling correlation error:", err);
+            }
+        }
+
+        /* ================= 6. TRADE HISTORY LOGIC ================= */
+        function updateTradeHistoryBadges(trades, strategy, asset) {
+            document.getElementById("thTotalTrades").innerText = trades.length;
+            const buys = trades.filter(t => t.action === "BUY").length;
+            const sells = trades.filter(t => t.action === "SELL" || t.action === "CLOSE").length;
+            const fees = trades.reduce((acc, t) => acc + (t.cost || 0), 0);
+
+            document.getElementById("thBuyTrades").innerText = buys;
+            document.getElementById("thSellTrades").innerText = sells;
+            document.getElementById("thTotalFees").innerText = "₹" + Math.round(fees).toLocaleString("en-IN");
+            document.getElementById("thStrategyUsed").innerText = strategy;
+            document.getElementById("thAssetTested").innerText = asset;
+            document.getElementById("tradesCountBadge").innerText = `${trades.length} Executed Orders`;
+        }
+
+        function filterTradeHistory(action) {
+            activeTradeFilter = action;
+            ["ALL", "BUY", "SELL"].forEach(a => {
+                const btn = document.getElementById("btn-filter-" + a.toLowerCase());
+                if (btn) {
+                    if (a === action) btn.classList.add("active");
+                    else btn.classList.remove("active");
+                }
+            });
+            renderTradeHistoryTable();
+        }
+
+        function onTradeSearch() {
+            renderTradeHistoryTable();
+        }
+
+        function renderTradeHistoryTable() {
+            const tbody = document.getElementById("tradesTableBody");
+            const searchTerm = (document.getElementById("tradeSearchInput").value || "").toLowerCase().trim();
+
+            if (!lastTradesData || lastTradesData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="icon">📋</div>
+                                <h3>No Backtest Run Yet</h3>
+                                <p>Run a backtest in the Backtesting or Dashboard section to generate live trade execution logs.</p>
+                                <button class="btn-primary" style="display: inline-flex;" onclick="runDefaultBacktestAndShowTrades()">
+                                    ▶ Run Sample Backtest Now
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let filtered = lastTradesData.filter(t => {
+                if (activeTradeFilter === "BUY" && t.action !== "BUY") return false;
+                if (activeTradeFilter === "SELL" && t.action !== "SELL" && t.action !== "CLOSE") return false;
+                if (searchTerm) {
+                    const rowStr = `${t.date} ${t.asset} ${t.action} ${t.price}`.toLowerCase();
+                    return rowStr.includes(searchTerm);
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state" style="padding: 30px 20px;">
+                                <div class="icon">🔍</div>
+                                <h3>No Matching Orders Found</h3>
+                                <p style="color: #94a3b8; margin: 6px 0 14px 0;">No executed trades matched "${escapeHtml(searchTerm)}" under the current filter.</p>
+                                <button class="btn-secondary" onclick="document.getElementById('tradeSearchInput').value=''; renderTradeHistoryTable();">
+                                    Clear Search Filter
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((t, i) => {
+                const badgeClass = t.action === "BUY" ? "badge-buy" : (t.action === "CLOSE" ? "badge-close" : "badge-sell");
+                return `
+                    <tr>
+                        <td style="color: #64748b;">#${i + 1}</td>
+                        <td style="font-weight: 500;">${t.date}</td>
+                        <td><span class="badge badge-asset">${t.asset}</span></td>
+                        <td><span class="badge ${badgeClass}">${t.action}</span></td>
+                        <td style="font-weight: 600;">$${Number(t.price).toLocaleString()}</td>
+                        <td>${t.shares}</td>
+                        <td style="color: #94a3b8;">₹${Number(t.cost).toFixed(2)}</td>
+                        <td style="font-weight: 700;">₹${Math.round(t.portfolio_value).toLocaleString("en-IN")}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        async function runDefaultBacktestAndShowTrades() {
+            navigateTo("backtest");
+            await runBacktestEngine();
+            navigateTo("trades");
+        }
+
+        /* ================= CHART HELPERS ================= */
+        function getStandardChartOptions(currencyPrefix = "") {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: { labels: { color: "#9ca3af", boxWidth: 12, padding: 15 } },
+                    tooltip: {
+                        backgroundColor: "#111827",
+                        titleColor: "#f3f4f6",
+                        bodyColor: "#d1d5db",
+                        borderColor: "#374151",
+                        borderWidth: 1,
+                        callbacks: {
+                            label: item => {
+                                const val = Number(item.raw);
+                                if (currencyPrefix === "%") return ` ${item.dataset.label}: ${val.toFixed(2)}%`;
+                                if (currencyPrefix === "₹") return ` ${item.dataset.label}: ₹${Math.round(val).toLocaleString("en-IN")}`;
+                                return ` ${item.dataset.label}: $${val.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: "rgba(255, 255, 255, 0.04)" },
+                        ticks: { color: "#6b7280", maxTicksLimit: 10 }
+                    },
+                    y: {
+                        grid: { color: "rgba(255, 255, 255, 0.04)" },
+                        ticks: {
+                            color: "#6b7280",
+                            callback: v => {
+                                if (currencyPrefix === "%") return v + "%";
+                                if (currencyPrefix === "₹") return "₹" + Number(v).toLocaleString("en-IN");
+                                return "$" + Number(v).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        /* ================= APP INITIALIZATION ================= */
+        window.addEventListener("DOMContentLoaded", () => {
+            // Check if URL hash specifies section
+            const hash = window.location.hash.replace("#", "");
+            const initialSection = ["dashboard", "market", "backtest", "risk", "correlation", "trades"].includes(hash)
+                ? hash
+                : "dashboard";
+
+            navigateTo(initialSection);
+
+            // Sync API Key display
+            updateApiKeyDisplay();
+
+            // Load initial dashboard metrics & overview
+            loadDashboardOverview();
+            runDashboardBacktest();
+        });
+    </script>
+</body>
+
+</html>

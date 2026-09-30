@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuantPulse — Multi-Asset Research Terminal</title>
+  <meta name="description" content="QuantPulse: Quantitative research, rigorously simulated. Multi-asset comparison, indicator engineering, correlation dynamics, and honest backtesting.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --bg-surface: #0a0f1d;
+      --bg-card: #0c1322;
+      --bg-card-hover: #10192e;
+      --bg-input: #060913;
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --border-focus: #22c55e;
+      --accent-green: #22c55e;
+      --accent-green-glow: rgba(34, 197, 94, 0.35);
+      --text-white: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --text-amber: #f59e0b;
+      --warning-bg: #030509;
+      --warning-border: rgba(245, 158, 11, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle thin technical grid covering entire background */
+    body {
+      background-image:
+        linear-gradient(to right, rgba(34, 197, 94, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34, 197, 94, 0.035) 1px, transparent 1px),
+        linear-gradient(to right, rgba(148, 163, 184, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.025) 1px, transparent 1px);
+      background-size: 36px 36px, 36px 36px, 144px 144px, 144px 144px;
+      background-position: center top;
+      position: relative;
+    }
+
+    /* Subtle radial glow under grid */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 15%;
+      left: 20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.035) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* =========================================================
+       TOP WARNING BAR
+       ========================================================= */
+    .warning-bar {
+      width: 100%;
+      background: var(--warning-bg);
+      border-bottom: 1px solid var(--warning-border);
+      padding: 7px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-amber);
+      text-transform: uppercase;
+      position: relative;
+      z-index: 20;
+    }
+
+    .warning-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-amber);
+    }
+
+    .warning-text {
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+    .header {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px 48px 10px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent-green);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
+    }
+
+    .brand-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: #050811;
+    }
+
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-name {
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-green);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .header-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      background: rgba(10, 15, 29, 0.7);
+      padding: 6px 13px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .header-tag:hover {
+      border-color: rgba(34, 197, 94, 0.4);
+      color: var(--accent-green);
+    }
+
+    /* =========================================================
+       MAIN HERO SECTION (2-COLUMN)
+       ========================================================= */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      padding: 16px 48px 36px 48px;
+    }
+
+    .hero-container {
+      width: 100%;
+      max-width: 1380px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.88fr;
+      gap: 52px;
+      align-items: center;
+    }
+
+    /* --- LEFT SIDE --- */
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--accent-green);
+      letter-spacing: 0.14em;
+      margin-bottom: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .headline {
+      font-family: 'Space Grotesk', 'JetBrains Mono', -apple-system, sans-serif;
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+
+    .headline .line-white {
+      color: var(--text-white);
+      display: block;
+    }
+
+    .headline .line-green {
+      color: var(--accent-green);
+      display: block;
+    }
+
+    .description {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.62;
+      color: var(--text-muted);
+      max-width: 530px;
+      margin-bottom: 26px;
+    }
+
+    /* 2x2 Feature Cards Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 550px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 50px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .feature-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-green);
+    }
+
+    .feature-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent-green);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .feature-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+
+    /* --- RIGHT LOGIN CARD --- */
+    .hero-right {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 470px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 24px 48px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(34, 197, 94, 0.04);
+      border-radius: 8px;
+      padding: 30px 30px 24px 30px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Tabs */
+    .login-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .tab-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-align: center;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--text-dim);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-green);
+      color: #04070e;
+      border-color: var(--accent-green);
+    }
+
+    .tab-btn:not(.active) {
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
+      background: rgba(6, 9, 19, 0.5);
+    }
+
+    .tab-btn:not(.active):hover {
+      border-color: rgba(34, 197, 94, 0.3);
+      color: var(--text-white);
+    }
+
+    /* Form */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-white);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input::placeholder {
+      color: #475569;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+    }
+
+    /* Primary Submit Button */
+    .btn-primary {
+      width: 100%;
+      background: var(--accent-green);
+      color: #04070e;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 4px;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-primary:hover {
+      background: #1eb555;
+      box-shadow: 0 0 20px var(--accent-green-glow);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.99);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .divider-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* Demo Button */
+    .btn-demo {
+      width: 100%;
+      background: #0d1527;
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 5px;
+      padding: 12px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-demo:hover {
+      border-color: rgba(34, 197, 94, 0.5);
+      color: var(--accent-green);
+      background: #111c34;
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.15);
+    }
+
+    /* Help Text */
+    .help-text {
+      margin-top: 15px;
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    /* Status Toast */
+    .status-banner {
+      display: none;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-green);
+      text-align: center;
+    }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================= */
+    @media (max-width: 1100px) {
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 44px;
+      }
+      .hero-right {
+        justify-content: flex-start;
+      }
+      .login-card {
+        max-width: 520px;
+      }
+      .headline {
+        font-size: 46px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 20px 24px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .header-tags {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .main-wrapper {
+        padding: 16px 24px 40px 24px;
+      }
+      .headline {
+        font-size: 36px;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .warning-bar {
+        font-size: 9.5px;
+        padding: 6px 12px;
+      }
+      .login-card {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP WARNING BAR -->
+  <aside class="warning-bar" aria-label="Disclaimer">
+    <span class="warning-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </span>
+    <span class="warning-text">
+      PAST PERFORMANCE &bull; FUTURE RESULTS &bull; RESEARCH ONLY &bull; BACKTESTS SUBJECT TO LOOK-AHEAD BIAS &amp; OVER-OPTIMIZATION
+    </span>
+  </aside>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand-container">
+      <div class="brand-icon" aria-hidden="true">
+        <!-- Quant / Sparkle Symbol -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <span class="brand-name">QuantPulse</span>
+        <span class="brand-sub">MULTI-ASSET RESEARCH TERMINAL</span>
+      </div>
+    </div>
+
+    <nav class="header-tags" aria-label="Terminal Modules">
+      <div class="header-tag">MARKET DATA</div>
+      <div class="header-tag">BACKTESTING</div>
+      <div class="header-tag">REGIME AI</div>
+    </nav>
+  </header>
+
+  <!-- MAIN HERO SECTION -->
+  <main class="main-wrapper">
+    <div class="hero-container">
+
+      <!-- LEFT SIDE: HERO CONTENT -->
+      <section class="hero-left">
+        <div class="eyebrow" id="hero-eyebrow">
+          // HACKHERE &middot; FINTECH TRACK
+        </div>
+
+        <h1 class="headline" id="main-headline">
+          <span class="line-white">Quantitative</span>
+          <span class="line-white">research,</span>
+          <span class="line-green">rigorously</span>
+          <span class="line-green">simulated.</span>
+        </h1>
+
+        <p class="description" id="hero-desc">
+          One terminal for multi-asset comparison, indicator engineering, correlation dynamics, and honest backtesting &mdash; with regime segmentation and AI-assisted plain-language readouts. Gold, Bitcoin, NVIDIA, and beyond.
+        </p>
+
+        <!-- 2x2 FEATURE CARDS -->
+        <div class="features-grid" id="feature-cards">
+          
+          <!-- Card 1 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <!-- Normalized chart icon -->
+              <svg viewBox="0 0 24 24">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+                <path d="M4 14l5-6 6 5 5-7"></path>
+              </svg>
+            </div>
+            <span class="feature-text">Normalized asset comparison</span>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <!-- Matrix / Grid icon -->
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </div>
+            <span class="feature-text">Correlation matrix + rolling window</span>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <!-- Technical waveform / indicators icon -->
+              <svg viewBox="0 0 24 24">
+                <path d="M3 12h4l3-8 4 16 3-8h4"></path>
+              </svg>
+            </div>
+            <span class="feature-text">SMA / EMA / Momentum / Mean-Rev</span>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <!-- Regime split / pie icon -->
+              <svg viewBox="0 0 24 24">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+            </div>
+            <span class="feature-text">Bull / Bear / Vol regime split</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT SIDE: LOGIN CARD -->
+      <section class="hero-right">
+        <div class="login-card" id="auth-card">
+          
+          <!-- TABS -->
+          <div class="login-tabs" role="tablist">
+            <button type="button" class="tab-btn active" id="tab-login" role="tab" aria-selected="true" onclick="switchAuthTab('login')">LOG IN</button>
+            <button type="button" class="tab-btn" id="tab-signup" role="tab" aria-selected="false" onclick="switchAuthTab('signup')">SIGN UP</button>
+          </div>
+
+          <!-- FORM -->
+          <form id="auth-form" onsubmit="handleEnterTerminal(event)">
+            <div class="form-group">
+              <label class="form-label" for="user-email">EMAIL</label>
+              <div class="form-input-wrap">
+                <input 
+                  type="email" 
+                  id="user-email" 
+                  class="form-input" 
+                  value="researcher@fund.io" 
+                  placeholder="researcher@fund.io"
+                  autocomplete="username"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="user-password">PASSWORD</label>
+              <div class="form-input-wrap">
+                <input 
+                  type="password" 
+                  id="user-password" 
+                  class="form-input" 
+                  placeholder="•••••••• (min 6 chars)" 
+                  autocomplete="current-password"
+                >
+              </div>
+            </div>
+
+            <!-- PRIMARY BUTTON -->
+            <button type="submit" class="btn-primary" id="btn-enter-terminal">
+              <span id="submit-btn-text">ENTER TERMINAL  &rarr;</span>
+            </button>
+          </form>
+
+          <!-- DIVIDER -->
+          <div class="divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <span class="divider-text">OR</span>
+            <span class="divider-line"></span>
+          </div>
+
+          <!-- DEMO BUTTON -->
+          <button type="button" class="btn-demo" id="btn-launch-demo" onclick="handleLaunchDemo()">
+            LAUNCH DEMO &middot; GOLD &middot; BTC &middot; NVDA
+          </button>
+
+          <!-- HELP TEXT -->
+          <p class="help-text">
+            Demo mode preloads 5 years of daily data with synthetic price series so you can explore the full workflow without an account.
+          </p>
+
+          <div id="status-toast" class="status-banner" role="status"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    let currentAuthMode = 'login';
+
+    function switchAuthTab(mode) {
+      currentAuthMode = mode;
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
+      const submitText = document.getElementById('submit-btn-text');
+
+      if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabLogin.setAttribute('aria-selected', 'true');
+        tabSignup.classList.remove('active');
+        tabSignup.setAttribute('aria-selected', 'false');
+        submitText.innerHTML = 'ENTER TERMINAL  &rarr;';
+      } else {
+        tabSignup.classList.add('active');
+        tabSignup.setAttribute('aria-selected', 'true');
+        tabLogin.classList.remove('active');
+        tabLogin.setAttribute('aria-selected', 'false');
+        submitText.innerHTML = 'CREATE RESEARCH ACCOUNT  &rarr;';
+      }
+    }
+
+    function showStatus(msg) {
+      const toast = document.getElementById('status-toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+    }
+
+    function handleEnterTerminal(event) {
+      if (event) event.preventDefault();
+      const email = document.getElementById('user-email').value || 'researcher@fund.io';
+      showStatus(`Authenticating [${email}] ... Routing to Research Desk`);
+      
+      // Store session state
+      try {
+        localStorage.setItem('quantx_user_email', email);
+        localStorage.setItem('quantx_authenticated', 'true');
+        localStorage.setItem('quantx_mode', currentAuthMode);
+      } catch (e) {}
+
+      setTimeout(() => {
+        window.location.href = '/terminal?authenticated=true';
+      }, 350);
+    }
+
+    function handleLaunchDemo() {
+      showStatus('Initializing 5Y Multi-Asset Preload [Gold · BTC · NVDA] ...');
+      try {
+        localStorage.setItem('quantx_user_email', 'demo.researcher@fund.io');
+        localStorage.setItem('quantx_authenticated', 'true');
+        localStorage.setItem('quantx_demo_mode', 'true');
+      } catch (e) {}
+
+      setTimeout(() => {
+        window.location.href = '/terminal?demo=true';
+      }, 350);
+    }
+  </script>
+</body>
+</html>

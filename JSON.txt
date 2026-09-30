@@ -1,0 +1,30 @@
+{
+    "asset": "bitcoin",
+    "strategy": "sma",
+
+    "metrics": {
+        "total_return": 35.42,
+        "volatility": 42.18,
+        "sharpe_ratio": 1.21,
+        "max_drawdown": -28.31,
+        "final_value": 135420
+    },
+
+    "trades": 24,
+
+    "buy_and_hold": {
+        "final_value": 148500,
+        "return": 48.50
+    },
+
+    "chart": [
+        {
+            "date": "2024-01-01",
+            "price": 44100,
+            "sma_short": 43000,
+            "sma_long": 41000,
+            "portfolio": 100000,
+            "signal": 1
+        }
+    ]
+}

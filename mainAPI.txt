@@ -1,0 +1,9 @@
+{
+    "asset": "bitcoin",
+    "period": "5y",
+    "strategy": "sma",
+    "initial_capital": 100000,
+    "transaction_cost": 0.001,
+    "short_window": 20,
+    "long_window": 50
+}
