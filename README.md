@@ -1,0 +1,2 @@
+# Quantitative-Multi-Asset-Financial-Intelligence-Backtesting-Platform
+ A FinTech platform that analyzes historical data of Gold, Bitcoin, and NVIDIA. It calculates returns, volatility, risk metrics, and correlations while backtesting SMA, EMA, Momentum, and Mean Reversion strategies. An interactive dashboard visualizes market trends, trading signals, portfolio performance, and strategy comparisons.
